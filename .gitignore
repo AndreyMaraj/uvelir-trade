@@ -35,5 +35,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# vs code debug
+# vs code project config
 /.vscode/
+
+# temporary data files
+/data-exchange/
