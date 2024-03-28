@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 				}
 
 				const fileName = request.nextUrl.searchParams.get('filename');
-				
+
 				if (!fileName) {
 					return new Response('File name is empty', { status: 400 });
 				}
