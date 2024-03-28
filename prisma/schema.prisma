@@ -1,0 +1,237 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+	provider = "prisma-client-js"
+}
+
+datasource db {
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
+}
+
+model Sex {
+	id              Int              @id @default(autoincrement())
+	name            String           @unique
+	targetAudiences TargetAudience[]
+}
+
+model AgeCategory {
+	id              Int              @id @default(autoincrement())
+	name            String           @unique
+	targetAudiences TargetAudience[]
+}
+
+model TargetAudience {
+	id            Int            @id @default(autoincrement())
+	sex           Sex            @relation(fields: [sexId], references: [id])
+	sexId         Int
+	ageCategory   AgeCategory    @relation(fields: [ageCategoryId], references: [id])
+	ageCategoryId Int
+	productModels ProductModel[]
+
+	@@unique([sexId, ageCategoryId])
+}
+
+model BladeType {
+	id     Int     @id @default(autoincrement())
+	name   String  @unique
+	blades Blade[]
+}
+
+model WeavingType {
+	id     Int     @id @default(autoincrement())
+	name   String  @unique
+	blades Blade[]
+}
+
+model Blade {
+	id            Int            @id @default(autoincrement())
+	type          BladeType      @relation(fields: [typeId], references: [id])
+	typeId        Int
+	weavingType   WeavingType    @relation(fields: [weavingTypeId], references: [id])
+	weavingTypeId Int
+	diameter      Int
+	productModels ProductModel[]
+
+	@@unique([typeId, weavingTypeId, diameter])
+}
+
+model RingDimensions {
+	id            Int            @id @default(autoincrement())
+	tireWidth     Int
+	productModels ProductModel[]
+
+	@@unique([tireWidth])
+}
+
+model EarringDimensions {
+	id             Int            @id @default(autoincrement())
+	depth          Int
+	pinLowering    Int?
+	pinWorkingArea Int
+	productModels  ProductModel[]
+
+	@@unique([depth, pinLowering, pinWorkingArea])
+}
+
+model ProductType {
+	id            Int            @id @default(autoincrement())
+	name          String         @unique
+	productModels ProductModel[]
+}
+
+model ProductStyle {
+	id            Int            @id @default(autoincrement())
+	name          String         @unique
+	productModels ProductModel[]
+}
+
+model ProductTheme {
+	id            Int            @id @default(autoincrement())
+	name          String         @unique
+	productModels ProductModel[]
+}
+
+model ProductLockType {
+	id            Int            @id @default(autoincrement())
+	name          String         @unique
+	productModels ProductModel[]
+}
+
+model MetalRaw {
+	id     Int     @id @default(autoincrement())
+	name   String  @unique
+	metals Metal[]
+}
+
+model MetalCoating {
+	id     Int     @id @default(autoincrement())
+	name   String  @unique
+	metals Metal[]
+}
+
+model Color {
+	id     Int     @id @default(autoincrement())
+	name   String  @unique
+	stones Stone[]
+	metals Metal[]
+}
+
+model Metal {
+	id             Int            @id @default(autoincrement())
+	metalRaw       MetalRaw       @relation(fields: [metalRawId], references: [id])
+	metalRawId     Int
+	metalCoating   MetalCoating   @relation(fields: [metalCoatingId], references: [id])
+	metalCoatingId Int
+	color          Color          @relation(fields: [colorId], references: [id])
+	colorId        Int
+	standard       Int
+	modelVariants  ModelVariant[]
+
+	@@unique([metalRawId, metalCoatingId, colorId, standard])
+}
+
+model StoneRaw {
+	id     Int     @id @default(autoincrement())
+	name   String  @unique
+	stones Stone[]
+}
+
+model CutType {
+	id     Int     @id @default(autoincrement())
+	name   String  @unique
+	stones Stone[]
+}
+
+model Stone {
+	id         Int      @id @default(autoincrement())
+	color      Color    @relation(fields: [colorId], references: [id])
+	colorId    Int
+	stoneRaw   StoneRaw @relation(fields: [stoneRawId], references: [id])
+	stoneRawId Int
+	cutType    CutType  @relation(fields: [cutTypeId], references: [id])
+	cutTypeId  Int
+	inlays     Inlay[]
+
+	@@unique([colorId, stoneRawId, cutTypeId])
+}
+
+model Inlay {
+	id             Int          @id @default(autoincrement())
+	stone          Stone        @relation(fields: [stoneId], references: [id])
+	stoneId        Int
+	modelVariant   ModelVariant @relation(fields: [modelVariantId], references: [id])
+	modelVariantId Int
+	count          Int
+	averageWeight  Int
+
+	@@unique([stoneId, modelVariantId])
+}
+
+model Product {
+	id      Int    @id
+	uaid    String
+	weight  Int
+	barcode String
+	price   Int
+}
+
+model SizeModel {
+	id             Int          @id @default(autoincrement())
+	modelVariant   ModelVariant @relation(fields: [modelVariantId], references: [id])
+	modelVariantId Int
+	size           Int
+	averageWeight  Int
+
+	@@unique([modelVariantId, size])
+}
+
+model ModelMedia {
+	id             Int          @id @default(autoincrement())
+	path           String
+	modelVariant   ModelVariant @relation(fields: [modelVariantId], references: [id])
+	modelVariantId Int
+
+	@@unique([path, modelVariantId])
+}
+
+model ModelVariant {
+	id             Int          @id @default(autoincrement())
+	productModel   ProductModel @relation(fields: [productModelId], references: [id])
+	productModelId Int
+	metal          Metal        @relation(fields: [metalId], references: [id])
+	metalId        Int
+	modelMedia     ModelMedia[]
+	sizeModels     SizeModel[]
+	inlays         Inlay[]
+
+	@@unique([productModelId, metalId])
+}
+
+model ProductModel {
+	id                  Int                @id @default(autoincrement())
+	article             String             @unique
+	type                ProductType        @relation(fields: [typeId], references: [id])
+	typeId              Int
+	targetAudience      TargetAudience?    @relation(fields: [targetAudienceId], references: [id])
+	targetAudienceId    Int?
+	style               ProductStyle?      @relation(fields: [styleId], references: [id])
+	styleId             Int?
+	theme               ProductTheme?      @relation(fields: [themeId], references: [id])
+	themeId             Int?
+	lockType            ProductLockType?   @relation(fields: [lockTypeId], references: [id])
+	lockTypeId          Int?
+	ringDimensions      RingDimensions?    @relation(fields: [ringDimensionsId], references: [id])
+	ringDimensionsId    Int?
+	earringDimensions   EarringDimensions? @relation(fields: [earringDimensionsId], references: [id])
+	earringDimensionsId Int?
+	blade               Blade?             @relation(fields: [bladeId], references: [id])
+	bladeId             Int?
+	height              Int?
+	width               Int?
+	modelVariants       ModelVariant[]
+}
